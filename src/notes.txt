@@ -1,0 +1,7 @@
+ users first log in with their user and becomes a user 
+ (sign up with email and they will receive user_id) .. 
+ then they will get a profile. each profiles foreign key is the user id (linked) 
+ and profiles have username, age, bio, and city.. 
+ then for friendships its bascially the status between two users.
+  the default is accepted. then we have posts, each post has a unique id from users,
+  l one post can have only one user, but one user can have many posts,
