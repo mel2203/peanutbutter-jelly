@@ -1,46 +1,92 @@
-import { useEffect, useState } from 'react'
-import { useAuth } from '../context/login'
-import { ENDPOINTS } from '../App'
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/login";
 
 export default function Friends() {
-  const { apiFetch } = useAuth()
-  const [users, setUsers] = useState([])
-  const [followed, setFollowed] = useState({})
-  const [error, setError] = useState('')
+  const { api } = useAuth();
+  const [friends, setFriends] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [friendId, setFriendId] = useState("");
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    apiFetch(ENDPOINTS.users)
-      .then((data) => setUsers(Array.isArray(data) ? data : data.users || []))
-      .catch((err) => setError(err.message))
-  }, [])
-
-  async function follow(userId) {
-    setError('')
-    try {
-      await apiFetch(ENDPOINTS.friends, {
-        method: 'POST',
-        body: JSON.stringify({ friend_id: userId }),
-      })
-      setFollowed({ ...followed, [userId]: true })
-    } catch (err) {
-      setError(err.message)
-    }
+  async function load() {
+    const f = await api("/friends");
+    const r = await api("/friend/requests");
+    if (f.res.ok) setFriends(f.data);
+    if (r.res.ok) setRequests(r.data);
   }
 
+  async function sendRequest(e) {
+    e.preventDefault();
+    const { data } = await api("/friend", {
+      method: "POST",
+      body: JSON.stringify({ friend_id: friendId }),
+    });
+    setMessage(data.message || data.error);
+    setFriendId("");
+    load();
+  }
+
+  async function accept(id) {
+    await api("/friend/accept", {
+      method: "PATCH",
+      body: JSON.stringify({ friend_id: id }),
+    });
+    load();
+  }
+
+  async function remove(id) {
+    await api(`/friend/${id}`, { method: "DELETE" });
+    load();
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const name = (u) => u.username || `User #${u.user_id}`;
+
   return (
-    <div>
-      <h1>Friends</h1>
-      {error && <p>{error}</p>}
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            {user.username || user.email}{' '}
-            <button onClick={() => follow(user.id)} disabled={followed[user.id]}>
-              {followed[user.id] ? 'Following' : 'Follow'}
+    <>
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Add a friend</h3>
+        <form onSubmit={sendRequest}>
+          <input
+            placeholder="Their user ID"
+            value={friendId}
+            onChange={(e) => setFriendId(e.target.value)}
+          />
+          <button type="submit">Send request 💌</button>
+        </form>
+        {message && <p className="switch">{message}</p>}
+      </div>
+
+      <h3>Requests</h3>
+      {requests.length === 0 && <p className="switch">No pending requests.</p>}
+      {requests.map((u) => (
+        <div className="card row" key={u.user_id}>
+          <span>{name(u)}</span>
+          <span>
+            <button onClick={() => accept(u.user_id)}>Accept</button>{" "}
+            <button className="secondary" onClick={() => remove(u.user_id)}>
+              Reject
             </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+          </span>
+        </div>
+      ))}
+
+      <h3>My friends</h3>
+      {friends.length === 0 && <p className="switch">No friends yet.</p>}
+      {friends.map((u) => (
+        <div className="card row" key={u.user_id}>
+          <span>
+            {name(u)}
+            {u.city && <span className="badge">{u.city}</span>}
+          </span>
+          <button className="secondary" onClick={() => remove(u.user_id)}>
+            Unfriend
+          </button>
+        </div>
+      ))}
+    </>
+  );
 }

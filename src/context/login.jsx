@@ -1,60 +1,45 @@
-import { createContext, useContext, useState } from 'react'
-import { ENDPOINTS } from '../App'
+import { createContext, useContext, useState } from "react";
 
-const AuthContext = createContext(null)
+const API =
+  "https://peanutbutterandjelly-backend-production-ca42.up.railway.app/"; //railway or vercel url
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('token'))
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
-  function logout() {
-    localStorage.removeItem('token')
-    setToken(null)
+  //token that allows user to stay logged in, stored in localStorage and state
+  function saveToken(t) {
+    localStorage.setItem("token", t);
+    setToken(t);
   }
 
-  async function apiFetch(url, options = {}) {
-    const res = await fetch(url, {
+  //logout function: removes token from localStorage and state
+  function logout() {
+    localStorage.removeItem("token");
+    setToken(null);
+  }
+
+  // fetch wrapper: adds the token and returns { res, data }
+  async function api(path, options = {}) {
+    const res = await fetch(`${API}${path}`, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
-    })
-    const body = await res.json().catch(() => ({}))
-
-    if (res.status === 401 && token) logout()
-    if (!res.ok) {
-      const err = body.error?.message || body.error || body.message
-      throw new Error(err || `Request failed (${res.status})`)
-    }
-    return body.data ?? body
-  }
-
-  async function login(email, password) {
-    const data = await apiFetch(ENDPOINTS.login, {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    const newToken = data.token || data.access_token || data.session?.access_token
-    if (!newToken) throw new Error('No token returned from /login')
-    localStorage.setItem('token', newToken)
-    setToken(newToken)
-  }
-
-  async function signup(email, password, username) {
-    return apiFetch(ENDPOINTS.signup, {
-      method: 'POST',
-      body: JSON.stringify({ email, password, username }),
-    })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (data.error === "Invalid token") logout(); // token expired
+    return { res, data };
   }
 
   return (
-    <AuthContext.Provider value={{ token, login, signup, logout, apiFetch }}>
+    <AuthContext.Provider value={{ token, saveToken, logout, api }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  return useContext(AuthContext)
+  return useContext(AuthContext);
 }

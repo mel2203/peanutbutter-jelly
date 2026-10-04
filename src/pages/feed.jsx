@@ -1,116 +1,81 @@
-import { useEffect, useState } from 'react'
-import { useAuth } from '../context/login'
-import { ENDPOINTS } from '../App'
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/login";
 
 export default function Feed() {
-  const { apiFetch } = useAuth()
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const { api } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [visibility, setVisibility] = useState("Public");
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [visibility, setVisibility] = useState('')
-  const [posting, setPosting] = useState(false)
-
-  function loadPosts() {
-    return apiFetch(ENDPOINTS.posts)
-      .then((data) => setPosts(Array.isArray(data) ? data : data.posts || []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+  async function loadPosts() {
+    const { res, data } = await api("/posts");
+    if (res.ok) setPosts(data);
   }
 
-  useEffect(() => {
-    loadPosts()
-  }, [])
-
-  async function handlePost(e) {
-    e.preventDefault()
-    setError('')
-    if (!title.trim()) return setError('Add a title')
-    if (!content.trim()) return setError('Write something first')
-    if (!visibility) return setError('Choose Public or Friends only')
-
-    setPosting(true)
-    try {
-      await apiFetch(ENDPOINTS.createPost, {
-        method: 'POST',
-        body: JSON.stringify({ title, content, visibility }),
-      })
-      setTitle('')
-      setContent('')
-      setVisibility('')
-      await loadPosts()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setPosting(false)
+  async function createPost(e) {
+    e.preventDefault();
+    const { res } = await api("/posts", {
+      method: "POST",
+      body: JSON.stringify({ title, content, visibility }),
+    });
+    if (res.ok) {
+      setTitle("");
+      setContent("");
+      loadPosts();
     }
   }
 
-  return (
-    <div>
-      <h1>Feed</h1>
+  async function deletePost(id) {
+    await api(`/posts/${id}`, { method: "DELETE" });
+    loadPosts();
+  }
 
-      <form onSubmit={handlePost}>
-        <p>
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  return (
+    <>
+      <div className="card">
+        <form onSubmit={createPost}>
           <input
             placeholder="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-        </p>
-        <p>
           <textarea
+            rows={3}
             placeholder="What's on your mind?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            rows={3}
-            cols={40}
           />
-        </p>
-        <p>
-          <label>
-            <input
-              type="radio"
-              name="visibility"
-              value="public"
-              checked={visibility === 'public'}
-              onChange={(e) => setVisibility(e.target.value)}
-            />{' '}
-            Public
-          </label>{' '}
-          <label>
-            <input
-              type="radio"
-              name="visibility"
-              value="friends"
-              checked={visibility === 'friends'}
-              onChange={(e) => setVisibility(e.target.value)}
-            />{' '}
-            Friends only
-          </label>
-        </p>
-        <button type="submit" disabled={posting}>
-          {posting ? 'Posting...' : 'Post'}
-        </button>
-      </form>
+          <select
+            value={visibility}
+            onChange={(e) => setVisibility(e.target.value)}
+          >
+            <option>Public</option>
+            <option>Friends-Only</option>
+            <option>Private</option>
+          </select>
+          <button type="submit">Spread it! 🍓</button>
+        </form>
+      </div>
 
-      {error && <p>{error}</p>}
-      <hr />
+      {posts.length === 0 && (
+        <p className="switch">No posts yet. Be the first to share!</p>
+      )}
 
-      {loading && <p>Loading posts...</p>}
-      {!loading && posts.length === 0 && <p>No posts yet.</p>}
-      {posts.map((post) => (
-        <article key={post.id}>
-          <h3>{post.title}</h3>
-          <p>{post.content}</p>
-          <small>
-            {post.author}
-            {post.created_at && ` · ${new Date(post.created_at).toLocaleString()}`}
-          </small>
-        </article>
+      {posts.map((p) => (
+        <div className="card" key={p.post_id}>
+          <strong>{p.title}</strong>
+          <span className="badge">{p.visibility}</span>
+          <p>{p.content}</p>
+          <button className="secondary" onClick={() => deletePost(p.post_id)}>
+            Delete
+          </button>
+        </div>
       ))}
-    </div>
-  )
+    </>
+  );
 }

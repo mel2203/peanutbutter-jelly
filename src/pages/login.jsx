@@ -1,33 +1,50 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/login'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/login";
 
 export default function Login() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const { api, saveToken } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    try {
-      await login(email, password)
-      navigate('/feed')
-    } catch (err) {
-      setError(err.message)
-    }
+    e.preventDefault();
+    const { res, data } = await api("/login", {
+      method: "POST",
+      body: JSON.stringify({ user_email: email, password }),
+    });
+    if (!res.ok) return setError(data.error);
+    saveToken(data.token);
+    navigate("/");
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Log in</h1>
-      <p><input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required /></p>
-      <p><input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required /></p>
-      <button type="submit">Log in</button>
-      {error && <p>{error}</p>}
-      <p>No account? <Link to="/signup">Sign up</Link></p>
-    </form>
-  )
+    <div className="container" style={{ maxWidth: 380, paddingTop: 70 }}>
+      <h1 className="logo">🥜 Peanut Butter & Jelly 🍇</h1>
+      <p className="tagline">Spread the love, make some friends!</p>
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Welcome back!</h3>
+        <form onSubmit={handleSubmit}>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Log in</button>
+        </form>
+        {error && <p className="error">{error}</p>}
+      </div>
+      <p className="switch">
+        New here? <Link to="/signup">Sign up</Link>
+      </p>
+    </div>
+  );
 }

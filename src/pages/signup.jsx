@@ -1,35 +1,50 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/login'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/login";
 
 export default function Signup() {
-  const { signup } = useAuth()
-  const navigate = useNavigate()
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const { api, saveToken } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(e) {
-    e.preventDefault()
-    setError('')
-    try {
-      await signup(email, password, username)
-      navigate('/login')
-    } catch (err) {
-      setError(err.message)
-    }
+    e.preventDefault();
+    const { res, data } = await api("/signup", {
+      method: "POST",
+      body: JSON.stringify({ user_email: email, password }),
+    });
+    if (!res.ok) return setError(data.error);
+    saveToken(data.token);
+    navigate("/");
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h1>Sign up</h1>
-      <p><input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} /></p>
-      <p><input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required /></p>
-      <p><input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required /></p>
-      <button type="submit">Sign up</button>
-      {error && <p>{error}</p>}
-      <p>Have an account? <Link to="/login">Log in</Link></p>
-    </form>
-  )
+    <div className="container" style={{ maxWidth: 380, paddingTop: 70 }}>
+      <h1 className="logo">🥜 Peanut Butter & Jelly 🍇</h1>
+      <p className="tagline">Spread the love, make some friends!</p>
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Join us!</h3>
+        <form onSubmit={handleSubmit}>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Sign up</button>
+        </form>
+        {error && <p className="error">{error}</p>}
+      </div>
+      <p className="switch">
+        Already have an account? <Link to="/login">Log in</Link>
+      </p>
+    </div>
+  );
 }
