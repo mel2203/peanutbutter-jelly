@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 
 const API =
-  "https://peanutbutterandjelly-backend-production-ca42.up.railway.app/"; //railway or vercel url
+  "https://peanutbutterandjelly-backend-production-ca42.up.railway.app"; //railway or vercel url
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
