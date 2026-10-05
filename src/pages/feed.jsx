@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/login";
 
 export default function Feed() {
-  const { api } = useAuth();
+  const { api, me } = useAuth();
   const [posts, setPosts] = useState([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -15,6 +15,7 @@ export default function Feed() {
 
   async function createPost(e) {
     e.preventDefault();
+    if (!title.trim() && !content.trim()) return;
     const { res } = await api("/posts", {
       method: "POST",
       body: JSON.stringify({ title, content, visibility }),
@@ -32,25 +33,32 @@ export default function Feed() {
   }
 
   useEffect(() => {
-    loadPosts();
+    async function init() {
+      const { res, data } = await api("/posts");
+      if (res.ok) setPosts(data);
+    }
+    init();
   }, []);
 
   return (
     <>
-      <div className="card">
-        <form onSubmit={createPost}>
-          <input
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
-            rows={3}
-            placeholder="What's on your mind?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+      <form className="card composer" onSubmit={createPost}>
+        <input
+          name="title"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <textarea
+          name="content"
+          rows={3}
+          placeholder="What's on your mind?"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+        <div className="composer-actions">
           <select
+            name="visibility"
             value={visibility}
             onChange={(e) => setVisibility(e.target.value)}
           >
@@ -58,23 +66,39 @@ export default function Feed() {
             <option>Friends-Only</option>
             <option>Private</option>
           </select>
-          <button type="submit">Spread it! 🍓</button>
-        </form>
-      </div>
+          <button type="submit">Post</button>
+        </div>
+      </form>
 
       {posts.length === 0 && (
-        <p className="switch">No posts yet. Be the first to share!</p>
+        <p className="empty">Nothing here yet. Say something!</p>
       )}
 
       {posts.map((p) => (
-        <div className="card" key={p.post_id}>
-          <strong>{p.title}</strong>
-          <span className="badge">{p.visibility}</span>
+        <article className="card post" key={p.post_id}>
+          <div className="post-head">
+            <div className="avatar">{(p.username || "U")[0].toUpperCase()}</div>
+            <div>
+              <div className="who">{p.username || `User #${p.user_id}`}</div>
+              <div className="when">
+                {new Date(p.created_at).toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "short",
+                })}
+              </div>
+            </div>
+            <span className="badge">{p.visibility}</span>
+          </div>
+
+          {p.title && <h3>{p.title}</h3>}
           <p>{p.content}</p>
-          <button className="secondary" onClick={() => deletePost(p.post_id)}>
-            Delete
-          </button>
-        </div>
+
+          {(me?.user_id === p.user_id || me?.role === "admin") && (
+            <button className="link" onClick={() => deletePost(p.post_id)}>
+              Delete
+            </button>
+          )}
+        </article>
       ))}
     </>
   );

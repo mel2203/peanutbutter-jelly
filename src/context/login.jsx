@@ -5,6 +5,8 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [profile, setProfile] = useState(null);
+  // user info (user_id, role) decoded from the token
   const me = token ? JSON.parse(atob(token.split(".")[1])) : null;
   //token that allows user to stay logged in, stored in localStorage and state
   function saveToken(t) {
@@ -16,6 +18,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem("token");
     setToken(null);
+    setProfile(null);
   }
 
   // fetch wrapper: adds the token and returns { res, data }
@@ -33,7 +36,9 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, me, saveToken, logout, api }}>
+    <AuthContext.Provider
+      value={{ token, me, profile, saveToken, logout, api, setProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );

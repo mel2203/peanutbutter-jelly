@@ -5,29 +5,27 @@ import Signup from "./pages/signup";
 import Feed from "./pages/feed";
 import Friends from "./pages/friends";
 import Profile from "./pages/profile";
+import Navbar from "./components/Navbar";
+import { useEffect } from "react";
 
 function Layout() {
-  const { token, logout } = useAuth();
-  if (!token) return <Navigate to="/login" replace />;
+  const { token, me, api, setProfile } = useAuth();
+  useEffect(() => {
+    if (!me) return;
+    async function init() {
+      const { res, data } = await api(`/profiles/${me.user_id}`);
+      if (res.ok) setProfile(data);
+    }
+    init();
+  }, []);
 
+  if (!token) return <Navigate to="/login" replace />;
   return (
-    <div className="container">
-      <header className="topbar">
-        <span className="wordmark">
-          peanut butter <em>&amp;</em> jelly
-        </span>
-        <nav className="nav">
-          <NavLink to="/" end>
-            Feed
-          </NavLink>
-          <NavLink to="/friends">Friends</NavLink>
-          <NavLink to="/profile">Profile</NavLink>
-        </nav>
-        <button className="secondary" onClick={logout}>
-          Log out
-        </button>
-      </header>
-      <Outlet />
+    <div className="pb-app">
+      <Navbar />
+      <main className="pb-main">
+        <Outlet />
+      </main>
     </div>
   );
 }
