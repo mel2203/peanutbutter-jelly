@@ -5,7 +5,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem("token"));
-
+  const me = token ? JSON.parse(atob(token.split(".")[1])) : null;
   //token that allows user to stay logged in, stored in localStorage and state
   function saveToken(t) {
     localStorage.setItem("token", t);
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, saveToken, logout, api }}>
+    <AuthContext.Provider value={{ token, me, saveToken, logout, api }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,25 +1,33 @@
-import { Routes, Route, Navigate, NavLink } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet, NavLink } from "react-router-dom";
 import { useAuth } from "./context/login";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 import Feed from "./pages/feed";
 import Friends from "./pages/friends";
+import Profile from "./pages/profile";
 
-function Protected({ children }) {
+function Layout() {
   const { token, logout } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
 
   return (
     <div className="container">
-      <h1 className="logo">🥜 Peanut Butter & Jelly 🍇</h1>
-      <div className="nav">
-        <NavLink to="/">Feed</NavLink>
-        <NavLink to="/friends">Friends</NavLink>
+      <header className="topbar">
+        <span className="wordmark">
+          peanut butter <em>&amp;</em> jelly
+        </span>
+        <nav className="nav">
+          <NavLink to="/" end>
+            Feed
+          </NavLink>
+          <NavLink to="/friends">Friends</NavLink>
+          <NavLink to="/profile">Profile</NavLink>
+        </nav>
         <button className="secondary" onClick={logout}>
           Log out
         </button>
-      </div>
-      {children}
+      </header>
+      <Outlet />
     </div>
   );
 }
@@ -29,22 +37,11 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route
-        path="/"
-        element={
-          <Protected>
-            <Feed />
-          </Protected>
-        }
-      />
-      <Route
-        path="/friends"
-        element={
-          <Protected>
-            <Friends />
-          </Protected>
-        }
-      />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Feed />} />
+        <Route path="/friends" element={<Friends />} />
+        <Route path="/profile" element={<Profile />} />
+      </Route>
     </Routes>
   );
 }
