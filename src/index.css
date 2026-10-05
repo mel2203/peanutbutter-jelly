@@ -378,3 +378,11 @@ button.pb-logout:hover { background: #f3e6d0; color: #3b1450; }
   margin-top: 14px;
   display: block;
 }
+
+.friend-msg {
+  text-align: center;
+  color: #a3315b;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}

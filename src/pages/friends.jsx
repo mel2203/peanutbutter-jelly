@@ -57,7 +57,7 @@ export default function Friends() {
           />
           <button type="submit">Send request 💌</button>
         </form>
-        {message && <p className="switch">{message}</p>}
+        {message && <p className="friend-msg">{message}</p>}
       </div>
 
       <h3>Requests</h3>
