@@ -1,8 +1,31 @@
-# social frontend starter
+# 🥜 Peanut Butter & Jelly 🍇
 
-Run the application with
+Find the peanut butter to your Jelly! Peanut Butter & Jelly is a cosy social media app. Sign up, create a profile, make friends, and spread posts that are public, friends-only, or private.
+
+**Live API:** peanutbutterandjelly-backend-production.up.railway.app
+
+## Features
+
+- Sign up and log in (hashed passwords, JWT auth)
+- Profiles with username, age, bio and city
+- Friend requests: send, accept, reject, unfriend
+- Posts with an optional image and a visibility setting (Public, Friends-Only, Private)
+- Admin role that can manage every post
+
+## Tech Stack
+
+| Part     | Tools                                        |
+| -------- | -------------------------------------------- |
+| Frontend | React, Vite, React Router                    |
+| Backend  | Node.js, Express, `bcryptjs`, `jsonwebtoken` |
+| Database | PostgreSQL on Supabase                       |
+| Hosting  | Railway                                      |
+
+## Project Structure
 
 ```
-npm i
-npm run dev
+backend/    Express API (see backend/README.md for endpoints)
+frontend/   React app (src/pages, src/components, src/context)
 ```
+
+Happy Spreading !
