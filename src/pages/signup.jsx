@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/login";
+import { ShaderBackground } from "../components/ShaderBg";
 
 export default function Signup() {
   const { api, saveToken } = useAuth();
@@ -21,30 +22,36 @@ export default function Signup() {
   }
 
   return (
-    <div className="container" style={{ maxWidth: 380, paddingTop: 70 }}>
-      <h1 className="logo">🥜 Peanut Butter & Jelly 🍇</h1>
-      <p className="tagline">Spread the love, make some friends!</p>
-      <div className="card">
-        <h3 style={{ marginTop: 0 }}>Join us!</h3>
-        <form onSubmit={handleSubmit}>
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit">Sign up</button>
-        </form>
-        {error && <p className="error">{error}</p>}
+    <div className="auth-page">
+      <ShaderBackground className="auth-bg" />
+      <div className="container" style={{ maxWidth: 380, paddingTop: 70 }}>
+        <img src="/logo.svg" alt="pbnj logo" className="auth-logo" />
+        <h1 className="logo">Peanut Butter & Jelly </h1>
+        <p className="tagline">🥜 Spread the love, make some friends! 🍇</p>
+        <div className="card">
+          <h3 style={{ marginTop: 0 }} className="card-title">
+            Join us!
+          </h3>
+          <form onSubmit={handleSubmit}>
+            <input
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit">Sign up</button>
+          </form>
+          {error && <p className="error">{error}</p>}
+        </div>
+        <p className="switch">
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
       </div>
-      <p className="switch">
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
     </div>
   );
 }
