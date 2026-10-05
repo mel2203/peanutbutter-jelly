@@ -56,7 +56,7 @@ export default function Feed() {
           <div className="pb-composer-text">
             <strong>Share a little something</strong>
           </div>
-          <span className="pb-spark">✳</span>
+          <span className="pb-spark">✧˖°</span>
         </div>
 
         <input
