@@ -21,11 +21,4 @@ Find the peanut butter to your Jelly! Peanut Butter & Jelly is a cosy social med
 | Database | PostgreSQL on Supabase                       |
 | Hosting  | Railway                                      |
 
-## Project Structure
-
-```
-backend/    Express API (see backend/README.md for endpoints)
-frontend/   React app (src/pages, src/components, src/context)
-```
-
 Happy Spreading !
